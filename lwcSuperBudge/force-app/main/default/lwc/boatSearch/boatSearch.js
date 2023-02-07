@@ -1,10 +1,10 @@
-import { LightningElement } from 'lwc';
+import { LightningElement,track } from 'lwc';
 import { NavigationMixin } from "lightning/navigation";
 
  // imports
 export default class BoatSearch extends NavigationMixin(LightningElement) {
-    isLoading = false;
-    
+    @track isLoading = false;
+
     // Handles loading event
     handleLoading() { 
         this.isLoading = true;
@@ -17,7 +17,15 @@ export default class BoatSearch extends NavigationMixin(LightningElement) {
     
     // Handles search boat event
     // This custom event comes from the form
-    searchBoats(event) { }
+    searchBoats(event) {
+        console.log('fromChildboatType:::', event.detail);
+        if (event.detail) {
+            // get boatTypeIdResult from child
+            const boatTypeId = event.detail.boatTypeId;
+            console.log('this.boatTypeId::', boatTypeId);
+            this.template.querySelector('c-boat-search-results').searchBoats(boatTypeId);
+        }
+    }
     
     createNewBoat() { 
         console.log('执行new boat create');

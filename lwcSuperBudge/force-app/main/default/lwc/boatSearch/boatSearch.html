@@ -9,7 +9,9 @@
           </div>
           <p class="slds-var-p-horizontal_small">
             <!-- boatSearchForm component goes here -->
-            <c-boat-search-form></c-boat-search-form>
+            <c-boat-search-form
+              onsearch={searchBoats}
+            ></c-boat-search-form>
           </p>
         </lightning-card>
       </lightning-layout-item>
@@ -18,6 +20,8 @@
         <!-- Spinner goes here -->
         <lightning-spinner if:true={isLoading} alternative-text="Loading" variant="brand" size="xx-small"></lightning-spinner>
         <!-- boatSearchResults goes here -->
+        <c-boat-search-results
+        ></c-boat-search-results>
         <!-- onloading={handleLoading} ondoneloading={handleDoneLoading} -->
       </lightning-layout-item>
     </lightning-layout>
