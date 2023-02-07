@@ -1,5 +1,7 @@
-import { LightningElement,api,track } from 'lwc';
+import { LightningElement,api,track, wire } from 'lwc';
 import getBoats from '@salesforce/apex/BoatDataService.getBoats';
+import { MessageContext, publish } from 'lightning/messageService';
+import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
 // ...
 const SUCCESS_TITLE = 'Success';
 const MESSAGE_SHIP_IT     = 'Ship it!';
@@ -10,14 +12,14 @@ export default class BoatSearchResults extends LightningElement {
   selectedBoatId;
   columns = [];
 
-  boatTypeId = '';
-  boats;
+  @track boatTypeId = '';
   @track isLoading = false;
   
   // wired message context
   messageContext;
   // wired getBoats method 
-  wiredBoats(result) { }
+  @wire(getBoats, { boatTypeId: "$boatTypeId" })
+  boats;
   
   // public function that updates the existing boatTypeId property
   // uses notifyLoading
@@ -34,11 +36,20 @@ export default class BoatSearchResults extends LightningElement {
   refresh() { }
   
   // this function must update selectedBoatId and call sendMessageService
-  updateSelectedTile() { }
+  updateSelectedTile(event) {
+    console.log('event.detail::',event.detail);
+    this.selectedBoatId = event.detail.boatId;
+    console.log('this.selectedBoatId::',this.selectedBoatId);
+    this.sendMessageService(this.selectedBoatId);
+  }
   
   // Publishes the selected boat Id on the BoatMC.
   sendMessageService(boatId) { 
     // explicitly pass boatId to the parameter recordId
+    const message = {
+      recordId: boatId
+    };
+    publish(this.messageContext, BOATMC, message);
   }
   
   // The handleSave method must save the changes in the Boat Editor
