@@ -1,19 +1,28 @@
 import { LightningElement,api,track, wire } from 'lwc';
 import getBoats from '@salesforce/apex/BoatDataService.getBoats';
+import updateBoatList from '@salesforce/apex/BoatDataService.updateBoatList';
 import { MessageContext, publish } from 'lightning/messageService';
 import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 // ...
 const SUCCESS_TITLE = 'Success';
 const MESSAGE_SHIP_IT     = 'Ship it!';
 const SUCCESS_VARIANT     = 'success';
 const ERROR_TITLE   = 'Error';
 const ERROR_VARIANT = 'error';
+
 export default class BoatSearchResults extends LightningElement {
   selectedBoatId;
-  columns = [];
+  columns = [
+    { label: 'Name', fieldName: 'Name',editable: true },
+    { label: 'Length', fieldName: 'Length__c', type: 'text',editable: true },
+    { label: 'Price', fieldName: 'Price__c', type: 'text',editable: true },
+    { label: 'Description', fieldName: 'Description__c', type: 'text',editable: true },
+  ];
 
   @track boatTypeId = '';
   @track isLoading = false;
+  @track draftValues = [];
   
   // wired message context
   messageContext;
@@ -28,12 +37,16 @@ export default class BoatSearchResults extends LightningElement {
     this.isLoading = true;
     console.log('resultboatTypeId::',boatTypeId);
     this.boatTypeId = boatTypeId;
-    // this.notifyLoading(this.isLoading);
+    this.notifyLoading(this.isLoading);
   }
   
   // this public function must refresh the boats asynchronously
   // uses notifyLoading
-  refresh() { }
+  @api async refresh() {
+    this.notifyLoading(true);
+    refreshApex(this.boats);
+    this.notifyLoading(false);
+  }
   
   // this function must update selectedBoatId and call sendMessageService
   updateSelectedTile(event) {
@@ -60,12 +73,41 @@ export default class BoatSearchResults extends LightningElement {
   handleSave(event) {
     // notify loading
     const updatedFields = event.detail.draftValues;
+    console.log('updatedFields::', updatedFields);
     // Update the records via Apex
     updateBoatList({data: updatedFields})
-    .then(() => {})
-    .catch(error => {})
-    .finally(() => {});
+    .then(() => {
+      console.log('success');
+      this.dispatchEvent(
+        new ShowToastEvent({
+            title: SUCCESS_TITLE,
+            message: MESSAGE_SHIP_IT,
+            variant: SUCCESS_VARIANT
+        })
+      );
+      // Display fresh data in the form
+      this.draftValues = [];
+      return this.refresh();
+    })
+    .catch(error => {
+      console.log('error::',error);
+      this.dispatchEvent(
+        new ShowToastEvent({
+            title: ERROR_TITLE,
+            message: error.body.message,
+            variant: ERROR_VARIANT
+        })
+      );
+    })
+    .finally(() => {
+      updatedFields = [];
+    });
   }
   // Check the current value of isLoading before dispatching the doneloading or loading custom event
-  notifyLoading(isLoading) { }
+  notifyLoading(isLoading) {
+    if (!isLoading) {
+        this.dispatchEvent(new CustomEvent('loading'));
+    }
+    this.dispatchEvent(CustomEvent('doneloading'));
+  }
 }

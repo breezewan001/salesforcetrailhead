@@ -21,6 +21,8 @@
         <lightning-spinner if:true={isLoading} alternative-text="Loading" variant="brand" size="xx-small"></lightning-spinner>
         <!-- boatSearchResults goes here -->
         <c-boat-search-results
+          onloading={handleLoading} 
+          ondoneloading={handleDoneLoading}
         ></c-boat-search-results>
         <!-- onloading={handleLoading} ondoneloading={handleDoneLoading} -->
       </lightning-layout-item>
