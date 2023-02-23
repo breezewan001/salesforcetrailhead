@@ -1,5 +1,7 @@
 import { LightningElement,api,track, wire } from 'lwc';
 import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
+import { getRecord } from 'lightning/uiRecordApi';
+import { subscribe, APPLICATION_SCOPE, MessageContext, unsubscribe } from 'lightning/messageService';
 
 // Declare the const LONGITUDE_FIELD for the boat's Longitude__s
 const LONGITUDE_FIELD = "Boat__c.Geolocation__Longitude__s";
@@ -15,10 +17,12 @@ export default class BoatMap extends LightningElement {
 
   // Getter and Setter to allow for logic to run on recordId change
   // this getter must be public
+  @api
   get recordId() {
     return this.boatId;
   }
   set recordId(value) {
+    console.log('setrecordId::', value);
     this.setAttribute('boatId', value);
     this.boatId = value;
   }
@@ -27,11 +31,14 @@ export default class BoatMap extends LightningElement {
   mapMarkers = [];
 
   // Initialize messageContext for Message Service
+  @wire(MessageContext)
+  messageContext;
 
   // Getting record's location to construct map markers using recordId
   // Wire the getRecord method using ('$boatId')
   @wire(getRecord, {recordId: '$boatId', fields: BOAT_FIELDS})
   wiredRecord({ error, data }) {
+    console.log('botMap wirdRecord::',data);
     // Error handling
     if (data) {
       this.error = undefined;
@@ -47,21 +54,46 @@ export default class BoatMap extends LightningElement {
 
   // Subscribes to the message channel
   subscribeMC() {
+    console.log('subscribeMC excute');
     // recordId is populated on Record Pages, and this component
     // should not update when this component is on a record page.
     if (this.subscription || this.recordId) {
       return;
     }
     // Subscribe to the message channel to retrieve the recordId and explicitly assign it to boatId.
+    this.subscription = subscribe(
+      this.messageContext,
+      BOATMC,
+      (message) => { 
+        console.log('subscribeMCmessage::', message);
+        this.boatId = message.recordId 
+      },
+      { scope: APPLICATION_SCOPE }
+    );
+
+    console.log('aftersubscribeMC::', this.boatId);
+    
+  }
+
+  unsubscribeFromMessageChannel() {
+    unsubscribe(this.subscription);
+    this.subscription = null;
   }
 
   // Calls subscribeMC()
   connectedCallback() {
+    console.log('boatMap conncetedCallback');
     this.subscribeMC();
   }
 
+  disconnectedCallback() {
+    this.unsubscribeFromMessageChannel();
+  }
+
   // Creates the map markers array with the current boat's location for the map.
-  updateMap(Longitude, Latitude) {}
+  updateMap(Longitude, Latitude) {
+    this.mapMarkers = [{location: { Latitude, Longitude }}];
+  }
 
   // Getter method for displaying the map component, or a helper method.
   get showMap() {
