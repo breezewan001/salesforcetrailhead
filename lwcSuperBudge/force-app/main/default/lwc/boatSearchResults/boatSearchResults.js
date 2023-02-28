@@ -4,6 +4,7 @@ import updateBoatList from '@salesforce/apex/BoatDataService.updateBoatList';
 import { MessageContext, publish } from 'lightning/messageService';
 import BOATMC from '@salesforce/messageChannel/BoatMessageChannel__c';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
 // ...
 const SUCCESS_TITLE = 'Success';
 const MESSAGE_SHIP_IT     = 'Ship it!';
@@ -23,12 +24,25 @@ export default class BoatSearchResults extends LightningElement {
   @track boatTypeId = '';
   @track isLoading = false;
   @track draftValues = [];
+  boats;
   
   // wired message context
+  @wire(MessageContext)
   messageContext;
+  
   // wired getBoats method 
-  @wire(getBoats, { boatTypeId: "$boatTypeId" })
-  boats;
+  @wire(getBoats, {boatTypeId: '$boatTypeId'})
+  wiredBoats({error, data}) {
+    if (data) {
+        this.boats = data;
+    } else if (error) {
+      const evt = new ShowToastEvent({
+          title: ERROR_TITLE,
+          variant: ERROR_VARIANT,
+      });
+      this.dispatchEvent(evt);
+    }
+  }
   
   // public function that updates the existing boatTypeId property
   // uses notifyLoading
@@ -72,7 +86,7 @@ export default class BoatSearchResults extends LightningElement {
   // clear lightning-datatable draft values
   handleSave(event) {
     // notify loading
-    const updatedFields = event.detail.draftValues;
+    let updatedFields = event.detail.draftValues;
     console.log('updatedFields::', updatedFields);
     // Update the records via Apex
     updateBoatList({data: updatedFields})
