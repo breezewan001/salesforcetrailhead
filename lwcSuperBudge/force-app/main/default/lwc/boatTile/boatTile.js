@@ -33,4 +33,3 @@ export default class BoatTile extends LightningElement {
         this.dispatchEvent(selectedEvent);
     }
 }
-  

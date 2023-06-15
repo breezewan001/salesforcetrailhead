@@ -7,7 +7,7 @@ public  class AnimalLocatorTest {
         Test.setMock(HttpCalloutMock.class, new AnimalLocatorMock()); 
         // This causes a fake response to be sent
         // from the class that implements HttpCalloutMock. 
-        String mouseName = AnimalLocator.getAnimalNameById(11);
-        System.assertEquals(mouseName, 'cat');
+        String mouseName = AnimalLocator.getAnimalNameById(1);
+        System.assertEquals(mouseName, 'chicken');
     }
 }

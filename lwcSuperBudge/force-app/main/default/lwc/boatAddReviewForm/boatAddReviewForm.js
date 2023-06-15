@@ -65,4 +65,3 @@ export default class BoatAddReviewForm extends LightningElement {
         }
     }
 }
-  

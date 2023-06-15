@@ -1,4 +1,5 @@
 public class AnimalLocator {
+    
     public static HttpResponse makeGetCallout(String endpoint) {
         Http http = new Http();
         HttpRequest request = new HttpRequest();
@@ -9,6 +10,7 @@ public class AnimalLocator {
     }
 
     public static String getAnimalNameById(Integer id) {
+        JSON2Apex animalname = new JSON2Apex();
         String baseUrl = 'https://th-apex-http-callout.herokuapp.com/animals/';
         String endpoint = baseUrl + id;
         System.debug('endpoint::' + endpoint);
@@ -20,16 +22,10 @@ public class AnimalLocator {
         
         if(response.getStatusCode() == 200) {
             // Deserializes the JSON string into collections of primitive data types.
-            Map<String, Object> results = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-            // Cast the values in the 'animals' key as a list
-            animals = (String) results.get('animals');
-            System.debug('Received the following animals:');
+            System.debug('aaa:' + response.getBody());
+            animalname = JSON2Apex.parse(response.getBody());
+            System.debug('bbb:' + animalname.animal.name);
         }
-        return animals;
-    }
-
-    public class Animal {
-        Integer id;
-        String name;
+        return animalname.animal.name;
     }
 }
