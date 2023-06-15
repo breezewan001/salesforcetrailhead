@@ -32,5 +32,13 @@
         <members>*</members>
         <name>StaticResource</name>
     </types>
+    <types>
+		<members>How_We_Roll_Maintenance</members>
+		<name>CustomApplication</name>
+	</types>
+	<types>
+		<members>*</members>
+		<name>FlexiPage</name>
+	</types>
     <version>56.0</version>
 </Package>
