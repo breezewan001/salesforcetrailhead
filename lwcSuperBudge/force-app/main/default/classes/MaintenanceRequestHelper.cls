@@ -21,13 +21,15 @@ public with sharing class MaintenanceRequestHelper {
         Equipment_Maintenance_Item__c WHERE Maintenance_Request__c IN :caseIdList];
 
         // put the Equipment_Maintenance_Item__c into the map
-        for (Equipment_Maintenance_Item__c emi : emiList) {
-            if (emiMap.containsKey(emi.Maintenance_Request__c)) {
-                emiMap.get(emi.Maintenance_Request__c).add(emi);
-            } else {
-                List<Equipment_Maintenance_Item__c> tempList = new List<Equipment_Maintenance_Item__c>();
-                tempList.add(emi);
-                emiMap.put(emi.Maintenance_Request__c, tempList);
+        if (emiList.size() > 0) {
+            for (Equipment_Maintenance_Item__c emi : emiList) {
+                if (emiMap.containsKey(emi.Maintenance_Request__c)) {
+                    emiMap.get(emi.Maintenance_Request__c).add(emi);
+                } else {
+                    List<Equipment_Maintenance_Item__c> tempList = new List<Equipment_Maintenance_Item__c>();
+                    tempList.add(emi);
+                    emiMap.put(emi.Maintenance_Request__c, tempList);
+                }
             }
         }
         
@@ -46,18 +48,20 @@ public with sharing class MaintenanceRequestHelper {
             List<Equipment_Maintenance_Item__c> emiforCaseList = emiMap.get(c.Id);
 
             // get the min Maintenance_Cycle__c from the Equipment_Maintenance_Item__c
-            Integer minMaintenanceCycle = 0;
-            for (Equipment_Maintenance_Item__c emi : emiforCaseList) {
-                if (minMaintenanceCycle == 0) {
-                    minMaintenanceCycle = (Integer)emi.Equipment__r.Maintenance_Cycle__c;
-                } else if ( (Integer)emi.Equipment__r.Maintenance_Cycle__c < minMaintenanceCycle) {
-                    minMaintenanceCycle =  (Integer)emi.Equipment__r.Maintenance_Cycle__c;
+            if (emiforCaseList != null) {
+                Integer minMaintenanceCycle = 0;
+                for (Equipment_Maintenance_Item__c emi : emiforCaseList) {
+                    if (minMaintenanceCycle == 0) {
+                        minMaintenanceCycle = (Integer)emi.Equipment__r.Maintenance_Cycle__c;
+                    } else if ( (Integer)emi.Equipment__r.Maintenance_Cycle__c < minMaintenanceCycle) {
+                        minMaintenanceCycle =  (Integer)emi.Equipment__r.Maintenance_Cycle__c;
+                    }
                 }
-            }
 
-            // set the new case date_reported__c to the min Maintenance_Cycle__c
-            Date today = Date.Today();
-            newCase.Date_Due__c = today.addDays(minMaintenanceCycle);
+                // set the new case date_reported__c to the min Maintenance_Cycle__c
+                Date today = Date.Today();
+                newCase.Date_Due__c = today.addDays(minMaintenanceCycle);
+            }
             
             finalCaseList.add(newCase);
             // log the new case
@@ -71,12 +75,14 @@ public with sharing class MaintenanceRequestHelper {
             List<Equipment_Maintenance_Item__c> secemiList = emiMap.get(c.BackUpId__c);
 
             // clone the Equipment_Maintenance_Item__c
-            for (Equipment_Maintenance_Item__c emi : secemiList) {
-                Equipment_Maintenance_Item__c newEmi = emi.clone(false, true, false, false);
-                newEmi.Maintenance_Request__c = c.Id;
-                finalEmiList.add(newEmi);
-                // log the new Equipment_Maintenance_Item__c
-                System.debug('finalEmiList: ' + finalEmiList);
+            if (secemiList != null) {
+                for (Equipment_Maintenance_Item__c emi : secemiList) {
+                    Equipment_Maintenance_Item__c newEmi = emi.clone(false, true, false, false);
+                    newEmi.Maintenance_Request__c = c.Id;
+                    finalEmiList.add(newEmi);
+                    // log the new Equipment_Maintenance_Item__c
+                    System.debug('finalEmiList: ' + finalEmiList);
+                }
             }
         }
 
