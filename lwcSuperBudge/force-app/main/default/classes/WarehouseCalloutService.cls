@@ -2,8 +2,8 @@ public with sharing class WarehouseCalloutService implements Queueable, Database
 
     private static final String WAREHOUSE_URL = 'https://th-superbadge-apex.herokuapp.com/equipment';
     
-    @future(callout=true)
     public static void runWarehouseEquipmentSync(){   	
+        System.debug('bbbbb');
 
         Http http = new Http();
         HttpRequest request = new HttpRequest();
@@ -29,6 +29,13 @@ public with sharing class WarehouseCalloutService implements Queueable, Database
                 objProduct.Current_Inventory__c = (Integer) mapJson.get('quantity');
                 lstProduct.add(objProduct);
             }
+            // log the response
+            System.debug('Response ' + response.getBody());
+            // log the jsonResponse
+            System.debug('jsonResponse ' + jsonResponse);
+            // log the lstProduct
+            System.debug('lstProduct ' + lstProduct);
+
             if(lstProduct.size() > 0){
                 upsert lstProduct;
             }
@@ -36,6 +43,7 @@ public with sharing class WarehouseCalloutService implements Queueable, Database
     }
     
     public static void execute(QueueableContext context){
+        System.debug('aaaaaa');
         runWarehouseEquipmentSync();
     }
     
