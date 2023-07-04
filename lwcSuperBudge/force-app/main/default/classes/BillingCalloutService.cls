@@ -41,9 +41,9 @@ public class BillingCalloutService {
                     // set the project's Billable_Amount__c to the BillingServiceProxy.billProject_element's billAmount
                     billProjectElement.billAmount = project.Billable_Amount__c;
                     // set custom setting ServiceCredentials__c's BillingServiceCredential's username to the billProjectElement's username
-                    billProjectElement.username = ServiceCredentials__c.getValues('billProjectElement').username__c;
+                    billProjectElement.username = ServiceCredentials__c.getValues('BillingServiceCredential').username__c;
                     // set custom setting ServiceCredentials__c's BillingServiceCredential's password to the billProjectElement's password
-                    billProjectElement.password = ServiceCredentials__c.getValues('billProjectElement').password__c;
+                    billProjectElement.password = ServiceCredentials__c.getValues('BillingServiceCredential').password__c;
     
                     // log the billProjectElement
                     System.debug('billProjectElement: ' + billProjectElement);
